@@ -21,7 +21,8 @@ export default function RootLayout({
             <strong className="mc-brand">메일크래프트</strong>
             <span className="mc-tagline">내부 검토용 메일 초안 도우미</span>
             <nav className="mc-nav">
-              <Link href="/">작성</Link>
+              <Link href="/">홈</Link>
+              <Link href="/compose">메일 작성</Link>
               <Link href="/models">모범 메일</Link>
             </nav>
           </div>

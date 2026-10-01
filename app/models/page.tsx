@@ -23,8 +23,11 @@ export default function ModelsPage() {
       <ModelMailList />
 
       <div className="mc-actions">
+        <Link className="mc-btn mc-btn--primary" href="/compose">
+          메일 작성하러 가기
+        </Link>
         <Link className="mc-btn" href="/">
-          ← 작성으로 돌아가기
+          홈으로
         </Link>
       </div>
     </>

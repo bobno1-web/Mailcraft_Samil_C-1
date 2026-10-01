@@ -10,18 +10,22 @@
 ```
 mailcraft/
 ├─ app/                 # 화면(페이지). Next.js App Router
-│  ├─ layout.tsx        #   공통 틀(머리말/꼬리말)
-│  ├─ page.tsx          #   메인: 입력→초안→점검 3단계 흐름
-│  └─ globals.css       #   디자인 토큰 + 공통 CSS 클래스
+│  ├─ layout.tsx        #   공통 틀(머리말/네비/꼬리말)
+│  ├─ page.tsx          #   랜딩(히어로 + 두 갈래 안내)
+│  ├─ compose/page.tsx  #   메인: 입력→초안→점검·발송 3단계 흐름
+│  ├─ models/page.tsx   #   모범 메일 모음
+│  └─ globals.css       #   디자인 토큰 + 공통 CSS 클래스(+반응형)
 ├─ components/          # 화면 부품(재사용 조각)
 │  ├─ Stepper.tsx       #   단계 표시
 │  ├─ ComposeForm.tsx   #   1단계 입력 폼
 │  ├─ DraftList.tsx     #   2단계 초안 목록
-│  └─ ChecklistView.tsx #   3단계 점검
+│  ├─ ChecklistView.tsx #   3단계 점검 + 발송 준비(복사·mailto)
+│  └─ ModelMailList.tsx #   모범 메일 카드 목록
 ├─ data/                # ★ 내용(알맹이) ★
 │  ├─ templates.ts      #   핵심 조합 로직 generateDrafts() + 틀 글귀
 │  ├─ models.ts         #   모범 메일 모음
-│  └─ checklist.ts      #   점검 항목
+│  ├─ checklist.ts      #   점검 항목 + 게이트 isChecklistComplete()
+│  └─ send.ts           #   발송 순수 도우미(buildMailtoUrl 등)
 ├─ lib/                 # ★ 규격(틀의 정의) ★
 │  ├─ types.ts          #   타입(=규격). 모든 key 의 '기준'
 │  └─ options.ts        #   화면에 보여줄 선택지 목록
@@ -67,25 +71,33 @@ mailcraft/
 
 ---
 
-## 4. compose 3단계 상태 흐름 (입력 → 초안 → 점검)
+## 4. compose 3단계 상태 흐름 (입력 → 초안 → 점검·발송)
 
-메인 화면(`app/page.tsx`)은 작은 상태 기계처럼 움직입니다.
+메인 화면(`app/compose/page.tsx`)은 작은 상태 기계처럼 움직입니다.
+(`app/page.tsx` 는 이 흐름으로 보내 주는 랜딩입니다.)
 
 ```
 [1. 입력]  ComposeForm 에서 수신자·톤·포함문구·제목·내용(points)을 고르고 적음
    │   "초안 만들기" 클릭
    ▼
-[2. 초안]  generateDrafts(input) 가 결정론적으로 초안 여러 개를 만들어 DraftList 로 보여 줌
-   │   "발송 전 점검" 클릭
+[2. 초안]  generateDrafts(input) 가 결정론적으로 초안 3종을 만들어 DraftList 로 보여 줌
+   │   "이 초안 선택" 클릭  (→ checked 초기화)
    ▼
-[3. 점검]  ChecklistView 에서 data/checklist.ts 항목을 체크
-           (앱 보조 / 자가확인 구분)
+[3. 점검·발송]  ChecklistView 에서 data/checklist.ts 항목을 체크
+               (앱 보조 / 자가확인 구분)
+               · 모든 항목 체크 → 복사·메일 열기 활성 (게이트: isChecklistComplete)
+               · 최종 본문/제목/받는사람/참조/마감 입력 → 복사 or mailto
 ```
 
-- 상태는 `page.tsx` 안의 `stage`(1·2·3), `input`, `drafts`, `checked` 가 전부입니다.
+- 상태는 `compose/page.tsx` 안의 `stage`(1·2·3), `input`, `drafts`, `selected`, `checked` 가 전부입니다.
+  (발송 폼의 본문/제목/주소/마감은 `ChecklistView` 로컬 상태이고, 초안을 다시 고르면 `key` 로 초기화됩니다.)
 - **초안 생성은 순수 함수 `generateDrafts()`** 하나에 모여 있습니다.
   입력이 같으면 결과가 항상 같습니다(무작위·네트워크 없음 = 절대 원칙 1).
-- 본문의 '내용'은 작성자가 적은 `points` 에서만 나옵니다(= 절대 원칙 2, 날조 금지).
+- **발송 게이트·조립도 순수 함수**(`data/checklist.ts` 의 `isChecklistComplete`,
+  `data/send.ts` 의 `assembleFinalText`·`buildMailtoUrl`)로 빼서 단위 테스트합니다.
+  복사 텍스트와 mailto 본문은 같은 `assembleFinalText` 로 만들어 서로 어긋나지 않습니다.
+- 본문의 '내용'은 작성자가 적은 `points`(와 발송 단계에서 직접 다듬은 본문)에서만
+  나옵니다(= 절대 원칙 2, 날조 금지). 마감 회신 기한도 작성자가 입력한 값입니다.
 
 ---
 

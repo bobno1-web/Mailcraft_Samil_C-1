@@ -36,7 +36,7 @@ npm run format     # Prettier 자동 포맷
 - **화면(app/·components/)은 "틀"만** 담당합니다.
 - **내용(data/·lib/)이 "알맹이"** 입니다. 글귀·선택지·규격이 모두 여기 있습니다.
 - 핵심 조합 로직: `data/templates.ts` 의 **`generateDrafts()`**.
-- 흐름: **입력 → 초안 → 점검** (compose 3단계).
+- 흐름: **입력 → 초안 → 점검·발송** (compose 3단계). 점검 항목을 모두 체크해야 복사·메일 열기(mailto)가 열립니다.
 
 자세히: [docs/architecture.md](docs/architecture.md)
 
