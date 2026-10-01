@@ -35,8 +35,9 @@ npm run format     # Prettier 자동 포맷
 
 - **화면(app/·components/)은 "틀"만** 담당합니다.
 - **내용(data/·lib/)이 "알맹이"** 입니다. 글귀·선택지·규격이 모두 여기 있습니다.
-- 핵심 조합 로직: `data/templates.ts` 의 **`generateDrafts()`**.
+- 핵심 조합 로직: `data/templates.ts` 의 **`generateDrafts()`** (한국어 조사는 순수 함수 `josa()`).
 - 흐름: **입력 → 초안 → 점검·발송** (compose 3단계). 점검 항목을 모두 체크해야 복사·메일 열기(mailto)가 열립니다.
+- **v2(자료 요청 전용):** 구조화 입력(대상·기한·형식·회신방법·비고) → 톤 **격식/친근**(작성 화면은 `COMPOSE_TONE_OPTIONS` 2개) × 변형 **요점/정중/간결** 3종. `concise`는 모범 메일 표시용으로만 남아 있습니다. 디자인 기준: `design/mockup.pdf`.
 
 자세히: [docs/architecture.md](docs/architecture.md)
 

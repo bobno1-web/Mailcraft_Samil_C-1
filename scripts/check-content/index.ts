@@ -23,7 +23,7 @@ import {
 } from "../../lib/options";
 import {
   RECIPIENT_TEMPLATES,
-  TONE_TEMPLATES,
+  TONE_VOICES,
   PHRASE_BLOCKS,
 } from "../../data/templates";
 import { MODEL_MAILS } from "../../data/models";
@@ -75,7 +75,7 @@ compareKeys(
 compareKeys(
   "tone",
   TONE_OPTIONS.map((o) => o.key),
-  Object.keys(TONE_TEMPLATES),
+  Object.keys(TONE_VOICES),
 );
 compareKeys(
   "phrase",
@@ -98,7 +98,7 @@ for (const [k, block] of Object.entries(PHRASE_BLOCKS)) {
 
 // ── 2) + 3) ModelMail 검사 ──
 const recipientKeys = new Set(Object.keys(RECIPIENT_TEMPLATES));
-const toneKeys = new Set(Object.keys(TONE_TEMPLATES));
+const toneKeys = new Set(Object.keys(TONE_VOICES));
 const modelIds = new Set<string>();
 
 MODEL_MAILS.forEach((m, i) => {

@@ -1,22 +1,25 @@
 /* app/globals.css
  * ───────────────────────────────────────────────────────────────────────────
- * 디자인 토큰(색/간격/모서리)과 공통 클래스입니다.
- * 색은 CSS 변수로 모아 두었으니, 브랜드 색이 정해지면 여기 한 곳만 바꾸면 됩니다.
- * 레퍼런스: docs/design-system.md
+ * 디자인 토큰(색/간격/모서리)과 공통 클래스입니다. (v2: 틸 테마 · 목업 기준)
+ * 색은 CSS 변수로 모아 두었으니, 브랜드 색이 바뀌면 여기 한 곳만 바꾸면 됩니다.
+ * 레퍼런스: docs/design-system.md · 목업: design/mockup.pdf
  * ───────────────────────────────────────────────────────────────────────────
  */
 
 :root {
-  /* 색 토큰 ── --color-primary 는 [확인 필요: 브랜드 색] 임시값입니다. */
-  --color-bg: #f6f7f9;
-  --color-surface: #ffffff;
-  --color-text: #1f2328;
-  --color-muted: #656d76;
-  --color-border: #d0d7de;
-  --color-primary: #2d6cdf; /* [확인 필요: 브랜드 색] placeholder */
-  --color-primary-contrast: #ffffff;
-  --color-danger: #c4344c;
-  --color-success: #1a7f4b;
+  /* 색 토큰 (브랜드: 틸) */
+  --bg: #f6f5f2;
+  --surface: #ffffff;
+  --ink: #1e1c1a;
+  --muted: #5e5a54;
+  --faint: #8a857e;
+  --line: #e3e0da;
+  --line-strong: #d7d3cc;
+  --accent: #16695a;
+  --accent-hover: #0f5044;
+  --accent-soft: #e6f0ed;
+  --accent-line: #bedbd3;
+  --warn: #b5792b;
 
   /* 간격/모서리 토큰 */
   --space-1: 4px;
@@ -25,131 +28,324 @@
   --space-4: 16px;
   --space-5: 24px;
   --space-6: 32px;
-  --radius: 10px;
-  --radius-sm: 6px;
+  --radius: 14px;
+  --radius-sm: 10px;
+  --radius-pill: 999px;
 }
 
 * {
   box-sizing: border-box;
 }
 
+html,
 body {
   margin: 0;
-  background: var(--color-bg);
-  color: var(--color-text);
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
   font-family:
+    var(--font-noto),
+    "Noto Sans KR",
     "Pretendard",
     system-ui,
     -apple-system,
     "Segoe UI",
     "Malgun Gothic",
     sans-serif;
-  line-height: 1.6;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+img,
+pre {
+  max-width: 100%;
 }
 
 .mc-container {
-  max-width: 820px;
+  max-width: 1120px;
   margin: 0 auto;
-  padding: 0 var(--space-4);
+  padding: 0 var(--space-5);
 }
 
-/* ── 헤더/푸터 ── */
-.mc-header {
-  background: var(--color-surface);
-  border-bottom: 1px solid var(--color-border);
-  padding: var(--space-4) 0;
+main.mc-container {
+  padding-top: var(--space-6);
+  padding-bottom: var(--space-6);
 }
-.mc-header .mc-container {
+
+/* ── 페이지 헤더(← 뒤로 · 제목 · 진행상태) ── */
+.mc-pagehead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+}
+.mc-pagehead__left {
   display: flex;
   align-items: baseline;
   gap: var(--space-3);
+  min-width: 0;
+}
+.mc-back {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.95rem;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font: inherit;
+  white-space: nowrap;
+}
+.mc-back:hover {
+  color: var(--accent);
+}
+.mc-pagehead__title {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+.mc-pagehead__status {
+  color: var(--faint);
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+/* ── 브랜드바(랜딩 상단) ── */
+.mc-brandbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-6);
 }
 .mc-brand {
-  font-size: 1.25rem;
-  color: var(--color-primary);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-weight: 700;
+  font-size: 1.15rem;
 }
-.mc-tagline {
-  color: var(--color-muted);
-  font-size: 0.9rem;
+.mc-logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  background: var(--accent);
+  color: #fff;
+  flex: none;
 }
-.mc-nav {
-  margin-left: auto;
-  display: flex;
-  gap: var(--space-4);
+.mc-logo svg {
+  width: 18px;
+  height: 18px;
 }
-.mc-nav a {
-  color: var(--color-muted);
-  text-decoration: none;
-  font-size: 0.9rem;
-}
-.mc-nav a:hover {
-  color: var(--color-primary);
-}
-.mc-footer {
-  margin-top: var(--space-6);
-  padding: var(--space-4) 0;
-  color: var(--color-muted);
+.mc-beta {
+  color: var(--faint);
   font-size: 0.85rem;
-  border-top: 1px solid var(--color-border);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  padding: var(--space-1) var(--space-3);
+}
+
+/* ── 랜딩 히어로 ── */
+.mc-hero {
+  text-align: center;
+  padding: var(--space-6) 0 var(--space-5);
+}
+.mc-hero__logo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+.mc-hero__logo .mc-logo {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius);
+}
+.mc-hero__logo svg {
+  width: 30px;
+  height: 30px;
+}
+.mc-hero__title {
+  margin: 0;
+  font-size: 2.4rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+.mc-hero__lead {
+  max-width: 48ch;
+  margin: var(--space-3) auto 0;
+  color: var(--muted);
+  font-size: 1.05rem;
+}
+
+/* ── 랜딩 2개 카드 ── */
+.mc-home-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+  margin-top: var(--space-5);
+}
+.mc-home-card {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: var(--space-5);
+  transition:
+    transform 0.08s ease,
+    box-shadow 0.12s ease;
+}
+.mc-home-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(30, 28, 26, 0.08);
+}
+.mc-home-card__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-sm);
+  background: var(--accent-soft);
+  color: var(--accent);
+  margin-bottom: var(--space-4);
+}
+.mc-home-card__icon svg {
+  width: 22px;
+  height: 22px;
+}
+.mc-home-card h2 {
+  margin: 0 0 var(--space-2);
+  font-size: 1.35rem;
+}
+.mc-home-card p {
+  margin: 0 0 var(--space-4);
+  color: var(--muted);
+}
+.mc-home-card__cta {
+  color: var(--accent);
+  font-weight: 700;
+}
+.mc-home-card--accent {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.mc-home-card--accent .mc-home-card__icon {
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+}
+.mc-home-card--accent p {
+  color: rgba(255, 255, 255, 0.85);
+}
+.mc-home-card--accent .mc-home-card__cta {
+  color: #fff;
 }
 
 /* ── 카드 ── */
 .mc-card {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  background: var(--surface);
+  border: 1px solid var(--line);
   border-radius: var(--radius);
   padding: var(--space-5);
-  margin: var(--space-4) 0;
+  margin: 0 0 var(--space-4);
 }
 
-/* ── 단계 표시 ── */
-.mc-stepper {
-  display: flex;
-  gap: var(--space-2);
-  margin: var(--space-5) 0 var(--space-3);
-  list-style: none;
-  padding: 0;
+/* ── 번호 섹션(① 라벨) ── */
+.mc-section {
+  margin-bottom: var(--space-5);
 }
-.mc-step {
-  flex: 1;
-  text-align: center;
-  padding: var(--space-2);
-  border-radius: var(--radius-sm);
-  background: var(--color-bg);
-  color: var(--color-muted);
-  font-size: 0.85rem;
+.mc-section:last-child {
+  margin-bottom: 0;
 }
-.mc-step[data-active="true"] {
-  background: var(--color-primary);
-  color: var(--color-primary-contrast);
+.mc-section__label {
+  font-weight: 700;
+  margin-bottom: var(--space-3);
+}
+.mc-section__label .mc-sub {
+  font-weight: 400;
+  color: var(--muted);
 }
 
 /* ── 폼 ── */
 .mc-field {
   margin-bottom: var(--space-4);
 }
+.mc-field:last-child {
+  margin-bottom: 0;
+}
 .mc-label {
   display: block;
   font-weight: 600;
   margin-bottom: var(--space-2);
+  font-size: 0.95rem;
 }
 .mc-input,
 .mc-select,
 .mc-textarea {
   width: 100%;
-  padding: var(--space-2) var(--space-3);
-  border: 1px solid var(--color-border);
+  padding: var(--space-3) var(--space-3);
+  border: 1px solid var(--line-strong);
   border-radius: var(--radius-sm);
   font: inherit;
-  background: var(--color-surface);
-  color: var(--color-text);
+  background: var(--surface);
+  color: var(--ink);
+}
+.mc-input:focus,
+.mc-select:focus,
+.mc-textarea:focus {
+  outline: 2px solid var(--accent-line);
+  border-color: var(--accent);
 }
 .mc-textarea {
-  min-height: 120px;
+  min-height: 112px;
   resize: vertical;
 }
+.mc-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+.mc-grid-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: var(--space-4);
+}
 
-/* ── 선택 칩(포함 문구) ── */
+/* ── 선택 pill(수신자/톤) ── */
+.mc-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.mc-pill {
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+}
+.mc-pill:hover {
+  border-color: var(--accent-line);
+}
+.mc-pill[data-on="true"] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  font-weight: 700;
+}
+
+/* ── 포함 문구 chip (+ 토글) ── */
 .mc-chips {
   display: flex;
   flex-wrap: wrap;
@@ -158,36 +354,84 @@ body {
 .mc-chip {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-2) var(--space-3);
-  border: 1px solid var(--color-border);
-  border-radius: 999px;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
   cursor: pointer;
   user-select: none;
 }
 .mc-chip[data-on="true"] {
-  border-color: var(--color-primary);
-  color: var(--color-primary);
+  background: var(--accent-soft);
+  border-color: var(--accent-line);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* ── 작은 조건/상태 뱃지 pill ── */
+.mc-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px var(--space-3);
+  border-radius: var(--radius-pill);
+  font-size: 0.8rem;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 600;
+}
+.mc-badge--plain {
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  color: var(--muted);
+  font-weight: 500;
 }
 
 /* ── 버튼 ── */
 .mc-btn {
-  padding: var(--space-2) var(--space-5);
-  border: 1px solid var(--color-border);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-5);
+  border: 1px solid var(--line-strong);
   border-radius: var(--radius-sm);
-  background: var(--color-surface);
-  color: var(--color-text);
+  background: var(--surface);
+  color: var(--ink);
   font: inherit;
+  font-weight: 600;
   cursor: pointer;
+  text-decoration: none;
+}
+.mc-btn:hover {
+  border-color: var(--accent-line);
 }
 .mc-btn--primary {
-  background: var(--color-primary);
-  border-color: var(--color-primary);
-  color: var(--color-primary-contrast);
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.mc-btn--primary:hover {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+.mc-btn--ghost {
+  background: var(--surface);
+  border-color: var(--accent-line);
+  color: var(--accent);
 }
 .mc-btn:disabled {
-  opacity: 0.5;
+  background: var(--line);
+  border-color: var(--line);
+  color: var(--faint);
   cursor: not-allowed;
+}
+.mc-btn--block {
+  width: 100%;
+  padding: var(--space-4);
+  font-size: 1.05rem;
 }
 .mc-actions {
   display: flex;
@@ -195,109 +439,87 @@ body {
   gap: var(--space-3);
   margin-top: var(--space-4);
 }
-
-/* ── 랜딩 ── */
-.mc-landing p {
-  max-width: 60ch;
-  color: var(--color-muted);
+.mc-actions--end {
+  justify-content: flex-end;
 }
 
-/* ── 랜딩 히어로 (루프4) ── */
-.mc-hero {
-  text-align: center;
-  padding: var(--space-6) var(--space-4);
-}
-.mc-hero__title {
-  font-size: 1.9rem;
-  line-height: 1.3;
-  margin: 0 0 var(--space-3);
-}
-.mc-hero__lead {
-  max-width: 54ch;
-  margin: 0 auto var(--space-5);
-  color: var(--color-muted);
-}
-.mc-hero .mc-actions {
-  justify-content: center;
-}
-.mc-features {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--space-4);
-  margin-top: var(--space-5);
-}
-.mc-feature {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  padding: var(--space-4);
-  text-align: left;
-}
-.mc-feature h3 {
-  margin: 0 0 var(--space-2);
-  font-size: 1rem;
-}
-.mc-feature p {
-  margin: 0;
-  max-width: none;
-  color: var(--color-muted);
-  font-size: 0.9rem;
-}
-
-/* ── 발송 준비 (체크리스트 게이트 · 루프3) ── */
-.mc-sendform {
-  margin-top: var(--space-5);
-  padding-top: var(--space-5);
-  border-top: 1px solid var(--color-border);
-}
-.mc-grid-2 {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-4);
-}
-.mc-warn {
-  margin: var(--space-1) 0 0;
-  color: var(--color-danger);
-  font-size: 0.85rem;
-}
-.mc-gate-note {
-  margin: var(--space-3) 0 0;
-  color: var(--color-muted);
-  font-size: 0.85rem;
-}
-
-/* ── 초안/점검 ── */
-.mc-draft {
-  border: 1px solid var(--color-border);
+/* ── 본문 박스(mailbox) ── */
+.mc-mailbox {
+  background: var(--bg);
+  border: 1px solid var(--line);
   border-radius: var(--radius-sm);
   padding: var(--space-4);
-  margin-bottom: var(--space-4);
-}
-.mc-draft h3 {
-  margin: 0 0 var(--space-2);
-}
-.mc-draft pre {
   white-space: pre-wrap;
   word-break: break-word;
   font: inherit;
   margin: 0;
+  width: 100%;
 }
-/* ── 모범 메일 태그/근거 ── */
-.mc-tags {
-  display: flex;
-  gap: var(--space-2);
-  margin-bottom: var(--space-2);
-}
-.mc-reasons {
-  margin-top: var(--space-3);
-}
-.mc-reasons ul {
-  margin: var(--space-1) 0 0;
-  padding-left: var(--space-5);
-  color: var(--color-muted);
-  font-size: 0.9rem;
+textarea.mc-mailbox {
+  min-height: 300px;
+  resize: vertical;
 }
 
+/* ── 초안 버전 카드 ── */
+.mc-version {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: var(--space-5);
+  margin-bottom: var(--space-4);
+}
+.mc-version__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+.mc-version__head strong {
+  font-size: 1.05rem;
+}
+.mc-version__body {
+  color: var(--ink);
+  margin: 0 0 var(--space-4);
+}
+
+/* 초안 미리보기는 흐르게(섹션 \n\n → 공백), 최종 메일함은 pre-wrap 으로 구분 */
+.mc-flow {
+  white-space: normal;
+}
+
+.mc-conds {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-5);
+}
+.mc-conds__label {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin-right: var(--space-1);
+}
+
+/* ── 발송(2단) ── */
+.mc-send-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: var(--space-4);
+  align-items: start;
+}
+.mc-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+.mc-card__head h2 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+/* ── 체크리스트 ── */
 .mc-checklist {
   list-style: none;
   padding: 0;
@@ -305,72 +527,125 @@ body {
 }
 .mc-checklist li {
   display: flex;
+  align-items: flex-start;
   gap: var(--space-3);
-  padding: var(--space-2) 0;
-  border-bottom: 1px solid var(--color-border);
+  padding: var(--space-3) 0;
 }
-.mc-kind {
-  font-size: 0.75rem;
-  padding: 0 var(--space-2);
-  border-radius: var(--radius-sm);
-  background: var(--color-bg);
-  color: var(--color-muted);
-  align-self: center;
+.mc-checklist input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--accent);
+  margin: 2px 0 0;
+  flex: none;
+  cursor: pointer;
 }
-.mc-hint {
-  color: var(--color-muted);
+.mc-check__text {
+  flex: 1;
+}
+.mc-check__kind {
+  color: var(--faint);
+  font-size: 0.85rem;
+}
+/* 아직 체크 안 한 항목은 주의색으로 강조 */
+.mc-checklist li[data-done="false"] .mc-check__text label {
+  color: var(--warn);
+  font-weight: 600;
+}
+.mc-divider {
+  border: none;
+  border-top: 1px solid var(--line);
+  margin: var(--space-4) 0;
+}
+.mc-gate-note {
+  margin: var(--space-3) 0 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+  text-align: center;
+}
+.mc-warn {
+  margin: var(--space-1) 0 0;
+  color: var(--warn);
   font-size: 0.85rem;
 }
 
-/* ── 반응형 (폰 폭) ──
- * 전 화면 가로 스크롤 없이 폰 폭(≤640px)에서 접히도록.
- * 긴 본문/제목은 넘치지 않게 줄바꿈합니다.
- */
-img,
-pre {
-  max-width: 100%;
+/* ── 모범 메일 카드 ── */
+.mc-models-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+  gap: var(--space-4);
+  align-items: start;
 }
-.mc-draft pre {
-  overflow-wrap: anywhere;
+.mc-model {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: var(--space-5);
+}
+.mc-model__badge {
+  margin-bottom: var(--space-3);
+}
+.mc-model h3 {
+  margin: 0 0 var(--space-3);
+  font-size: 1.1rem;
+}
+.mc-model__tags {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+.mc-reasons__title {
+  font-weight: 700;
+  margin: 0 0 var(--space-2);
+}
+.mc-reasons ul {
+  margin: 0;
+  padding-left: var(--space-5);
+  color: var(--muted);
+}
+.mc-reasons li {
+  margin-bottom: var(--space-1);
 }
 
-@media (max-width: 640px) {
+/* ── 힌트/공통 ── */
+.mc-hint {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+/* ── 푸터 ── */
+.mc-footer {
+  border-top: 1px solid var(--line);
+  color: var(--faint);
+  font-size: 0.85rem;
+  padding: var(--space-4) 0;
+}
+
+/* ── 반응형(폰 폭) ── */
+@media (max-width: 720px) {
   .mc-container {
-    padding: 0 var(--space-3);
+    padding: 0 var(--space-4);
   }
-  .mc-header .mc-container {
+  .mc-home-cards,
+  .mc-grid-2,
+  .mc-grid-3,
+  .mc-send-grid {
+    grid-template-columns: 1fr;
+  }
+  .mc-hero__title {
+    font-size: 1.9rem;
+  }
+  .mc-hero__logo .mc-logo {
+    width: 46px;
+    height: 46px;
+  }
+  .mc-pagehead {
     flex-wrap: wrap;
     gap: var(--space-2);
   }
-  .mc-nav {
+  .mc-pagehead__status {
     width: 100%;
-    margin-left: 0;
-    gap: var(--space-3);
-  }
-  .mc-hero {
-    padding: var(--space-5) var(--space-2);
-  }
-  .mc-hero__title {
-    font-size: 1.5rem;
-  }
-  .mc-features {
-    grid-template-columns: 1fr;
-  }
-  .mc-grid-2 {
-    grid-template-columns: 1fr;
-  }
-  .mc-stepper {
-    gap: var(--space-1);
-  }
-  .mc-step {
-    padding: var(--space-1);
-    font-size: 0.75rem;
-  }
-  .mc-btn {
-    padding: var(--space-2) var(--space-4);
   }
   .mc-actions .mc-btn {
     flex: 1 1 auto;
-    text-align: center;
   }
 }

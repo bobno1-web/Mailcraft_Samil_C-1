@@ -1,13 +1,25 @@
 // components/ComposeForm.tsx
-// 1단계(입력) 화면. 화면은 '틀'만 담당하고, 선택지 내용은 lib/options.ts 에서 옵니다.
-// 핵심내용(content) + 수신자 + 톤 + 포함문구(복수) 를 받습니다.
+// 1단계(입력) 화면. v2: '메모 한 칸' 대신 자료 요청 구조화 필드로 입력받습니다.
+// 화면은 '틀'만, 선택지 내용은 lib/options.ts 에서 옵니다.
+//  - 대상·기한은 필수(둘 다 채워야 '메일 만들기' 활성)
+//  - 톤은 격식/친근 2개(COMPOSE_TONE_OPTIONS), 간결은 변형(초안)으로 이동
+
+"use client";
 
 import {
   RECIPIENT_OPTIONS,
-  TONE_OPTIONS,
+  COMPOSE_TONE_OPTIONS,
+  REPLY_METHOD_OPTIONS,
   PHRASE_OPTIONS,
 } from "../lib/options";
-import type { ComposeInput, PhraseKey } from "../lib/types";
+import type {
+  ComposeInput,
+  PhraseKey,
+  RecipientKey,
+  ToneKey,
+  ReplyMethodKey,
+  RequestFields,
+} from "../lib/types";
 
 interface Props {
   value: ComposeInput;
@@ -16,6 +28,9 @@ interface Props {
 }
 
 export default function ComposeForm({ value, onChange, onSubmit }: Props) {
+  const setReq = (patch: Partial<RequestFields>) =>
+    onChange({ ...value, request: { ...value.request, ...patch } });
+
   const togglePhrase = (key: PhraseKey) => {
     const on = value.phrases.includes(key);
     onChange({
@@ -26,125 +41,171 @@ export default function ComposeForm({ value, onChange, onSubmit }: Props) {
     });
   };
 
+  const canSubmit =
+    value.request.target.trim().length > 0 &&
+    value.request.due.trim().length > 0;
+
   return (
-    <section className="mc-card">
-      <div className="mc-field">
-        <label className="mc-label" htmlFor="content">
-          핵심 내용
-        </label>
-        <textarea
-          id="content"
-          className="mc-textarea"
-          value={value.content}
-          placeholder={
-            "전하실 핵심 내용을 적어 주세요.\n(여기 적은 내용만 본문에 들어갑니다 — 없는 내용은 지어내지 않습니다)"
-          }
-          onChange={(e) => onChange({ ...value, content: e.target.value })}
-        />
-        <p className="mc-hint">
-          비워 두면 본문에 &quot;[전하실 내용을 입력해 주세요]&quot; 자리표시가
-          들어갑니다.
-        </p>
-      </div>
-
-      <div className="mc-field">
-        <label className="mc-label" htmlFor="recipient">
-          받는 사람 유형
-        </label>
-        <select
-          id="recipient"
-          className="mc-select"
-          value={value.recipient}
-          onChange={(e) =>
-            onChange({
-              ...value,
-              recipient: e.target.value as ComposeInput["recipient"],
-            })
-          }
-        >
-          {RECIPIENT_OPTIONS.map((o) => (
-            <option key={o.key} value={o.key}>
-              {o.label}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      <div className="mc-field">
-        <label className="mc-label" htmlFor="tone">
-          말투(톤)
-        </label>
-        <select
-          id="tone"
-          className="mc-select"
-          value={value.tone}
-          onChange={(e) =>
-            onChange({ ...value, tone: e.target.value as ComposeInput["tone"] })
-          }
-        >
-          {TONE_OPTIONS.map((o) => (
-            <option key={o.key} value={o.key}>
-              {o.label}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      <div className="mc-field">
-        <span className="mc-label">포함 문구 (여러 개 선택 가능)</span>
-        <div className="mc-chips">
-          {PHRASE_OPTIONS.map((o) => (
-            <button
-              type="button"
-              key={o.key}
-              className="mc-chip"
-              data-on={value.phrases.includes(o.key)}
-              aria-pressed={value.phrases.includes(o.key)}
-              onClick={() => togglePhrase(o.key)}
-            >
-              {o.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="mc-field">
-        <label className="mc-label" htmlFor="recipientName">
-          받는 분 이름 (선택)
-        </label>
-        <input
-          id="recipientName"
-          className="mc-input"
-          value={value.recipientName ?? ""}
-          placeholder="예: 홍길동"
-          onChange={(e) =>
-            onChange({ ...value, recipientName: e.target.value })
-          }
-        />
-      </div>
-
-      <div className="mc-field">
-        <label className="mc-label" htmlFor="subject">
-          제목 (선택)
-        </label>
-        <input
-          id="subject"
-          className="mc-input"
-          value={value.subject ?? ""}
-          placeholder="예: [안내] 요청 자료 회신 기한"
-          onChange={(e) => onChange({ ...value, subject: e.target.value })}
-        />
-      </div>
-
-      <div className="mc-actions">
+    <>
+      <div className="mc-actions mc-actions--end">
         <button
           type="button"
           className="mc-btn mc-btn--primary"
           onClick={onSubmit}
+          disabled={!canSubmit}
         >
-          초안 만들기
+          메일 만들기 →
         </button>
       </div>
-    </section>
+
+      <section className="mc-card">
+        <p className="mc-hint" style={{ marginTop: 0 }}>
+          지금은 <strong>자료 요청</strong> 메일 전용입니다. 필요한 항목만
+          채우면 초안 3종(요점·정중·간결)을 만들어 드려요.
+        </p>
+
+        {/* ① 자료 요청 내용 */}
+        <div className="mc-section">
+          <div className="mc-section__label">
+            ① 요청 내용 <span className="mc-sub">— 자료 요청 전용</span>
+          </div>
+
+          <div className="mc-grid-2">
+            <div className="mc-field">
+              <label className="mc-label" htmlFor="req-target">
+                대상 <span style={{ color: "var(--warn)" }}>*</span>
+              </label>
+              <input
+                id="req-target"
+                className="mc-input"
+                value={value.request.target}
+                placeholder="예: 재고자산 조회서"
+                onChange={(e) => setReq({ target: e.target.value })}
+              />
+            </div>
+            <div className="mc-field">
+              <label className="mc-label" htmlFor="req-due">
+                기한 <span style={{ color: "var(--warn)" }}>*</span>
+              </label>
+              <input
+                id="req-due"
+                className="mc-input"
+                value={value.request.due}
+                placeholder="예: 6월 30일"
+                onChange={(e) => setReq({ due: e.target.value })}
+              />
+            </div>
+          </div>
+
+          <div className="mc-grid-2">
+            <div className="mc-field">
+              <label className="mc-label" htmlFor="req-format">
+                형식 <span className="mc-sub">(선택)</span>
+              </label>
+              <input
+                id="req-format"
+                className="mc-input"
+                value={value.request.format ?? ""}
+                placeholder="예: PDF"
+                onChange={(e) => setReq({ format: e.target.value })}
+              />
+            </div>
+            <div className="mc-field">
+              <span className="mc-label">회신 방법</span>
+              <div className="mc-pills">
+                {REPLY_METHOD_OPTIONS.map((o) => (
+                  <button
+                    type="button"
+                    key={o.key}
+                    className="mc-pill"
+                    data-on={value.request.replyMethod === o.key}
+                    aria-pressed={value.request.replyMethod === o.key}
+                    onClick={() =>
+                      setReq({ replyMethod: o.key as ReplyMethodKey })
+                    }
+                  >
+                    {o.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="mc-field">
+            <label className="mc-label" htmlFor="req-note">
+              비고 <span className="mc-sub">(선택)</span>
+            </label>
+            <input
+              id="req-note"
+              className="mc-input"
+              value={value.request.note ?? ""}
+              placeholder="예: 회신 시 담당자 성함을 함께 기재 부탁드립니다."
+              onChange={(e) => setReq({ note: e.target.value })}
+            />
+          </div>
+        </div>
+
+        {/* ② 수신자 */}
+        <div className="mc-section">
+          <div className="mc-section__label">② 수신자</div>
+          <div className="mc-pills">
+            {RECIPIENT_OPTIONS.map((o) => (
+              <button
+                type="button"
+                key={o.key}
+                className="mc-pill"
+                data-on={value.recipient === o.key}
+                aria-pressed={value.recipient === o.key}
+                onClick={() =>
+                  onChange({ ...value, recipient: o.key as RecipientKey })
+                }
+              >
+                {o.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* ③ 톤 (격식/친근) */}
+        <div className="mc-section">
+          <div className="mc-section__label">③ 톤</div>
+          <div className="mc-pills">
+            {COMPOSE_TONE_OPTIONS.map((o) => (
+              <button
+                type="button"
+                key={o.key}
+                className="mc-pill"
+                data-on={value.tone === o.key}
+                aria-pressed={value.tone === o.key}
+                onClick={() => onChange({ ...value, tone: o.key as ToneKey })}
+              >
+                {o.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* ④ 포함 문구 */}
+        <div className="mc-section">
+          <div className="mc-section__label">
+            ④ 포함 문구 <span className="mc-sub">(선택)</span>
+          </div>
+          <div className="mc-chips">
+            {PHRASE_OPTIONS.map((o) => (
+              <button
+                type="button"
+                key={o.key}
+                className="mc-chip"
+                data-on={value.phrases.includes(o.key)}
+                aria-pressed={value.phrases.includes(o.key)}
+                onClick={() => togglePhrase(o.key)}
+              >
+                + {o.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </section>
+    </>
   );
 }

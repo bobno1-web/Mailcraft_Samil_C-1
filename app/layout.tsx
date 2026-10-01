@@ -1,6 +1,14 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { Noto_Sans_KR } from "next/font/google";
 import "./globals.css";
+
+// Noto Sans KR 을 빌드 시 자체 호스팅합니다(런타임 외부 요청 없음 = 절대 원칙 1 유지).
+const noto = Noto_Sans_KR({
+  subsets: ["latin"],
+  weight: ["400", "500", "700", "800"],
+  display: "swap",
+  variable: "--font-noto",
+});
 
 export const metadata: Metadata = {
   title: "메일크래프트",
@@ -14,19 +22,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="ko">
+    <html lang="ko" className={noto.variable}>
       <body>
-        <header className="mc-header">
-          <div className="mc-container">
-            <strong className="mc-brand">메일크래프트</strong>
-            <span className="mc-tagline">내부 검토용 메일 초안 도우미</span>
-            <nav className="mc-nav">
-              <Link href="/">홈</Link>
-              <Link href="/compose">메일 작성</Link>
-              <Link href="/models">모범 메일</Link>
-            </nav>
-          </div>
-        </header>
         <main className="mc-container">{children}</main>
         <footer className="mc-footer">
           <div className="mc-container">

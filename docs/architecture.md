@@ -10,25 +10,27 @@
 ```
 mailcraft/
 ├─ app/                 # 화면(페이지). Next.js App Router
-│  ├─ layout.tsx        #   공통 틀(머리말/네비/꼬리말)
-│  ├─ page.tsx          #   랜딩(히어로 + 두 갈래 안내)
+│  ├─ layout.tsx        #   공통 틀(폰트/본문 래퍼/꼬리말) — 전역 헤더 없음
+│  ├─ page.tsx          #   랜딩(브랜드바 + 히어로 + 두 갈래 카드)
 │  ├─ compose/page.tsx  #   메인: 입력→초안→점검·발송 3단계 흐름
 │  ├─ models/page.tsx   #   모범 메일 모음
-│  └─ globals.css       #   디자인 토큰 + 공통 CSS 클래스(+반응형)
+│  └─ globals.css       #   디자인 토큰(틸) + 공통 CSS 클래스(+반응형)
 ├─ components/          # 화면 부품(재사용 조각)
-│  ├─ Stepper.tsx       #   단계 표시
-│  ├─ ComposeForm.tsx   #   1단계 입력 폼
-│  ├─ DraftList.tsx     #   2단계 초안 목록
-│  ├─ ChecklistView.tsx #   3단계 점검 + 발송 준비(복사·mailto)
-│  └─ ModelMailList.tsx #   모범 메일 카드 목록
+│  ├─ PageHeader.tsx    #   흐름 페이지 상단 바(← 뒤로 · 제목 · 진행상태)
+│  ├─ Icons.tsx         #   인라인 SVG 아이콘(봉투·책·연필·자물쇠)
+│  ├─ ComposeForm.tsx   #   1단계 입력 폼(자료 요청 구조화 필드)
+│  ├─ DraftList.tsx     #   2단계 초안(버전 A/B/C) 선택
+│  ├─ ChecklistView.tsx #   3단계 점검 + 발송(2단: 최종 메일 / 보내기 전 확인)
+│  └─ ModelMailList.tsx #   모범 메일 카드 그리드
 ├─ data/                # ★ 내용(알맹이) ★
-│  ├─ templates.ts      #   핵심 조합 로직 generateDrafts() + 틀 글귀
-│  ├─ models.ts         #   모범 메일 모음
+│  ├─ templates.ts      #   핵심 조합 generateDrafts() + josa() + 톤/변형 블록
+│  ├─ models.ts         #   모범 메일 모음(불변)
 │  ├─ checklist.ts      #   점검 항목 + 게이트 isChecklistComplete()
 │  └─ send.ts           #   발송 순수 도우미(buildMailtoUrl 등)
 ├─ lib/                 # ★ 규격(틀의 정의) ★
 │  ├─ types.ts          #   타입(=규격). 모든 key 의 '기준'
-│  └─ options.ts        #   화면에 보여줄 선택지 목록
+│  └─ options.ts        #   선택지 목록(+ COMPOSE_TONE_OPTIONS·REPLY_METHOD_OPTIONS)
+├─ design/mockup.pdf    # 디자인 기준(5쪽: 랜딩/모범/작성/초안/발송)
 └─ scripts/check-content/  # 내용 형식 가드(검사기)
 ```
 
@@ -77,27 +79,30 @@ mailcraft/
 (`app/page.tsx` 는 이 흐름으로 보내 주는 랜딩입니다.)
 
 ```
-[1. 입력]  ComposeForm 에서 수신자·톤·포함문구·제목·내용(points)을 고르고 적음
-   │   "초안 만들기" 클릭
+[1. 입력]  ComposeForm 에서 자료 요청 구조화 필드(대상·기한·형식·회신방법·비고)
+   │        + 수신자 + 톤(격식/친근) + 포함문구를 고르고 적음 (대상·기한 필수)
+   │   "메일 만들기 →" 클릭
    ▼
-[2. 초안]  generateDrafts(input) 가 결정론적으로 초안 3종을 만들어 DraftList 로 보여 줌
-   │   "이 초안 선택" 클릭  (→ checked 초기화)
+[2. 초안]  generateDrafts(input) 가 선택 톤 안에서 변형 3종(요점 A·정중 B·간결 C)을
+   │        결정론적으로 만들어 DraftList 로 보여 줌 (선택한 조건 뱃지로 되짚음)
+   │   "이 버전 선택 →" 클릭  (→ checked 초기화)
    ▼
-[3. 점검·발송]  ChecklistView 에서 data/checklist.ts 항목을 체크
-               (앱 보조 / 자가확인 구분)
-               · 모든 항목 체크 → 복사·메일 열기 활성 (게이트: isChecklistComplete)
-               · 최종 본문/제목/받는사람/참조/마감 입력 → 복사 or mailto
+[3. 점검·발송]  ChecklistView(2단): 왼쪽 최종 메일(수신인/참조/마감 + 본문 편집),
+               오른쪽 보내기 전 확인(data/checklist.ts 항목)
+               · 모든 항목 체크 → '복사 · 메일 열기' 활성 (게이트: isChecklistComplete)
+               · 클릭 시 본문을 클립보드 복사 + mailto 로 메일 프로그램 열기
 ```
 
 - 상태는 `compose/page.tsx` 안의 `stage`(1·2·3), `input`, `drafts`, `selected`, `checked` 가 전부입니다.
-  (발송 폼의 본문/제목/주소/마감은 `ChecklistView` 로컬 상태이고, 초안을 다시 고르면 `key` 로 초기화됩니다.)
-- **초안 생성은 순수 함수 `generateDrafts()`** 하나에 모여 있습니다.
+  (발송 폼의 본문/수신인/참조/마감은 `ChecklistView` 로컬 상태이고, 초안을 다시 고르면 `key` 로 초기화됩니다.)
+- **초안 생성은 순수 함수 `generateDrafts()`** 하나에 모여 있습니다(톤 × 변형).
+  한국어 조사(을/를·은/는·(으)로)는 받침 기준 순수 함수 `josa()` 가 처리합니다.
   입력이 같으면 결과가 항상 같습니다(무작위·네트워크 없음 = 절대 원칙 1).
-- **발송 게이트·조립도 순수 함수**(`data/checklist.ts` 의 `isChecklistComplete`,
-  `data/send.ts` 의 `assembleFinalText`·`buildMailtoUrl`)로 빼서 단위 테스트합니다.
-  복사 텍스트와 mailto 본문은 같은 `assembleFinalText` 로 만들어 서로 어긋나지 않습니다.
-- 본문의 '내용'은 작성자가 적은 `points`(와 발송 단계에서 직접 다듬은 본문)에서만
-  나옵니다(= 절대 원칙 2, 날조 금지). 마감 회신 기한도 작성자가 입력한 값입니다.
+- **발송 게이트도 순수 함수**(`data/checklist.ts` 의 `isChecklistComplete`,
+  `data/send.ts` 의 `buildMailtoUrl`)로 빼서 단위 테스트합니다.
+  복사 본문과 mailto 본문은 같은 편집 본문을 써서 서로 어긋나지 않습니다.
+- 본문의 '내용'은 작성자가 입력한 구조화 필드(와 발송 단계에서 직접 다듬은 본문)에서만
+  나옵니다(= 절대 원칙 2, 날조 금지). {받는사람}은 `○○님`, 보내는 사람은 `○○회계법인 ○○○` placeholder 입니다.
 
 ---
 

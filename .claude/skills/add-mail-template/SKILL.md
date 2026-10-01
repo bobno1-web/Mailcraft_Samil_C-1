@@ -19,9 +19,15 @@ description: 메일크래프트에 새 수신자(recipient)·톤(tone)·포함�
 
 ## 어떤 종류인지 먼저 확인
 
-- 수신자 → `RecipientKey` / `RECIPIENT_OPTIONS` / `RECIPIENT_TEMPLATES`
-- 톤 → `ToneKey` / `TONE_OPTIONS` / `TONE_TEMPLATES`
+- 수신자 → `RecipientKey` / `RECIPIENT_OPTIONS` / `RECIPIENT_TEMPLATES`(값 타입 `RecipientVoice`)
+- 톤 → `ToneKey` / `TONE_OPTIONS` / `TONE_VOICES`(값 타입 `ToneVoice`)
 - 포함문구 → `PhraseKey` / `PHRASE_OPTIONS` / `PHRASE_BLOCKS`
+- 회신 방법 → `ReplyMethodKey` / `REPLY_METHOD_OPTIONS` / `REPLY_METHOD_LABELS`
+
+> **v2 참고:** 자료 요청 전용이고, 작성 화면 톤은 `COMPOSE_TONE_OPTIONS`(격식/친근 2개)만
+> 노출합니다. `concise`(간결)는 모범 메일 표시용으로 `ToneKey`·`TONE_OPTIONS`·`TONE_VOICES`
+> 에만 남아 있습니다(작성 흐름에서는 변형 '간결형 C'로 대체). 새 톤을 작성 화면에도 보이게
+> 하려면 `COMPOSE_TONE_OPTIONS` 필터도 함께 넓혀야 합니다.
 
 ## 절차 (세 곳 동기화 — 반드시 이 순서)
 
@@ -29,8 +35,10 @@ description: 메일크래프트에 새 수신자(recipient)·톤(tone)·포함�
 2. **`lib/options.ts`**: 대응하는 `..._OPTIONS` 배열에 `{ key, label, description? }` 를 추가한다.
    - `key` 는 1에서 추가한 값과 **정확히 동일**해야 한다.
 3. **`data/templates.ts`**: 대응하는 `Record` 에 실제 글귀를 추가한다.
-   - 수신자: `salutation`(‘{name}’ 치환됨)·`signoff`
-   - 톤: `opening`·`closing`
+   - 수신자(`RECIPIENT_TEMPLATES`): `salutationName`(인사의 호칭 자리. 예: `"○○님"`)
+   - 톤(`TONE_VOICES`): `greetingFull`·`greetingMin`·`ask`·`askPolite`·`bufferPolite`·
+     `formatLead`·`closingPoint`·`closingPolite`·`closingBrief` (A/B/C 변형이 이 블록들을 조합)
+   - 회신 방법(`REPLY_METHOD_LABELS`): 문장에 그대로 들어갈 라벨(예: `"회신"`)
    - 포함문구: `{ key, label, text }` — 이때 안쪽 `key` 도 바깥 이름과 같게.
      본문 **삽입 순서는 `PHRASE_BLOCKS` 의 선언 순서**로 자동 결정됩니다
      (별도 순서 목록 없음). 원하는 위치에 선언하세요.

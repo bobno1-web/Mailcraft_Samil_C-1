@@ -7,7 +7,13 @@
 // 라벨/설명은 사실을 지어내지 말고 팀이 쓰는 표현으로 바꾸면 됩니다.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import type { Option, RecipientKey, ToneKey, PhraseKey } from "./types";
+import type {
+  Option,
+  RecipientKey,
+  ToneKey,
+  PhraseKey,
+  ReplyMethodKey,
+} from "./types";
 
 /** 받는 사람 유형 선택지. (수신자별 호칭·맺음말이 다르게 적용됩니다) */
 export const RECIPIENT_OPTIONS: ReadonlyArray<Option<RecipientKey>> = [
@@ -21,11 +27,33 @@ export const RECIPIENT_OPTIONS: ReadonlyArray<Option<RecipientKey>> = [
   { key: "internal", label: "사내", description: "같은 회사/팀 동료" },
 ];
 
-/** 말투(톤) 선택지. (톤은 도입부 문장에 반영됩니다) */
+/**
+ * 말투(톤) 선택지(전체). 모범 메일 표시용 라벨 매핑 + 형식 가드에 쓰입니다.
+ * concise(간결)는 기존 모범 메일이 쓰고 있어 라벨용으로 남겨 둡니다.
+ * (작성 화면에서 고르는 톤은 아래 COMPOSE_TONE_OPTIONS 2개입니다)
+ */
 export const TONE_OPTIONS: ReadonlyArray<Option<ToneKey>> = [
   { key: "formal", label: "격식", description: "정중하고 공식적인 말투" },
   { key: "friendly", label: "친근", description: "부드럽고 가까운 말투" },
-  { key: "concise", label: "간결", description: "군더더기 없이 짧게" },
+  {
+    key: "concise",
+    label: "간결",
+    description: "군더더기 없이 짧게(모범 메일 표시용)",
+  },
+];
+
+/**
+ * 작성 화면에서 고를 수 있는 톤(격식/친근 2개).
+ * v2에서 '간결'은 톤이 아니라 변형(요점/정중/간결)으로 옮겨졌습니다.
+ */
+export const COMPOSE_TONE_OPTIONS: ReadonlyArray<Option<ToneKey>> =
+  TONE_OPTIONS.filter((o) => o.key === "formal" || o.key === "friendly");
+
+/** 회신 방법 선택지(기본 reply=회신). 문장의 "{회신방법} 부탁드립니다"에 들어갑니다. */
+export const REPLY_METHOD_OPTIONS: ReadonlyArray<Option<ReplyMethodKey>> = [
+  { key: "reply", label: "회신", description: "메일로 답신" },
+  { key: "share", label: "공유", description: "자료를 공유" },
+  { key: "submit", label: "제출", description: "정식으로 제출" },
 ];
 
 /** 포함 문구(블록) 선택지. (복수 선택 가능, 본문엔 아래 순서대로 고정 삽입) */
