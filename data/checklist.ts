@@ -38,3 +38,18 @@ export const CHECKLIST: ChecklistItem[] = [
     hint: "확인되지 않은 수치·일정·약속이 들어가지 않았는지 봅니다.",
   },
 ];
+
+/**
+ * 발송 게이트(순수 로직): 체크리스트의 '모든' 항목이 체크됐는지.
+ * - compose 3단계에서 '복사·메일 열기' 버튼의 활성/비활성을 결정합니다.
+ * - 화면(React) 없이도 검증할 수 있도록 순수 함수로 분리했습니다(단위 테스트 대상).
+ *
+ * @param checked  id→boolean 맵(예: { "subject-filled": true, ... })
+ * @param items    검사할 항목(기본값: 전체 CHECKLIST). 빈 배열이면 true.
+ */
+export function isChecklistComplete(
+  checked: Record<string, boolean>,
+  items: ChecklistItem[] = CHECKLIST,
+): boolean {
+  return items.every((item) => checked[item.id] === true);
+}
