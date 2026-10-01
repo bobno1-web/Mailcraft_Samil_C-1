@@ -1,0 +1,252 @@
+/* app/globals.css
+ * ───────────────────────────────────────────────────────────────────────────
+ * 디자인 토큰(색/간격/모서리)과 공통 클래스입니다.
+ * 색은 CSS 변수로 모아 두었으니, 브랜드 색이 정해지면 여기 한 곳만 바꾸면 됩니다.
+ * 레퍼런스: docs/design-system.md
+ * ───────────────────────────────────────────────────────────────────────────
+ */
+
+:root {
+  /* 색 토큰 ── --color-primary 는 [확인 필요: 브랜드 색] 임시값입니다. */
+  --color-bg: #f6f7f9;
+  --color-surface: #ffffff;
+  --color-text: #1f2328;
+  --color-muted: #656d76;
+  --color-border: #d0d7de;
+  --color-primary: #2d6cdf; /* [확인 필요: 브랜드 색] placeholder */
+  --color-primary-contrast: #ffffff;
+  --color-danger: #c4344c;
+  --color-success: #1a7f4b;
+
+  /* 간격/모서리 토큰 */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --radius: 10px;
+  --radius-sm: 6px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family:
+    "Pretendard",
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    "Malgun Gothic",
+    sans-serif;
+  line-height: 1.6;
+}
+
+.mc-container {
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 0 var(--space-4);
+}
+
+/* ── 헤더/푸터 ── */
+.mc-header {
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  padding: var(--space-4) 0;
+}
+.mc-header .mc-container {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+}
+.mc-brand {
+  font-size: 1.25rem;
+  color: var(--color-primary);
+}
+.mc-tagline {
+  color: var(--color-muted);
+  font-size: 0.9rem;
+}
+.mc-nav {
+  margin-left: auto;
+  display: flex;
+  gap: var(--space-4);
+}
+.mc-nav a {
+  color: var(--color-muted);
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+.mc-nav a:hover {
+  color: var(--color-primary);
+}
+.mc-footer {
+  margin-top: var(--space-6);
+  padding: var(--space-4) 0;
+  color: var(--color-muted);
+  font-size: 0.85rem;
+  border-top: 1px solid var(--color-border);
+}
+
+/* ── 카드 ── */
+.mc-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: var(--space-5);
+  margin: var(--space-4) 0;
+}
+
+/* ── 단계 표시 ── */
+.mc-stepper {
+  display: flex;
+  gap: var(--space-2);
+  margin: var(--space-5) 0 var(--space-3);
+  list-style: none;
+  padding: 0;
+}
+.mc-step {
+  flex: 1;
+  text-align: center;
+  padding: var(--space-2);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg);
+  color: var(--color-muted);
+  font-size: 0.85rem;
+}
+.mc-step[data-active="true"] {
+  background: var(--color-primary);
+  color: var(--color-primary-contrast);
+}
+
+/* ── 폼 ── */
+.mc-field {
+  margin-bottom: var(--space-4);
+}
+.mc-label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: var(--space-2);
+}
+.mc-input,
+.mc-select,
+.mc-textarea {
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font: inherit;
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+.mc-textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+/* ── 선택 칩(포함 문구) ── */
+.mc-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.mc-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  cursor: pointer;
+  user-select: none;
+}
+.mc-chip[data-on="true"] {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+/* ── 버튼 ── */
+.mc-btn {
+  padding: var(--space-2) var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  cursor: pointer;
+}
+.mc-btn--primary {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-primary-contrast);
+}
+.mc-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.mc-actions {
+  display: flex;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+/* ── 초안/점검 ── */
+.mc-draft {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+.mc-draft h3 {
+  margin: 0 0 var(--space-2);
+}
+.mc-draft pre {
+  white-space: pre-wrap;
+  word-break: break-word;
+  font: inherit;
+  margin: 0;
+}
+/* ── 모범 메일 태그/근거 ── */
+.mc-tags {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+.mc-reasons {
+  margin-top: var(--space-3);
+}
+.mc-reasons ul {
+  margin: var(--space-1) 0 0;
+  padding-left: var(--space-5);
+  color: var(--color-muted);
+  font-size: 0.9rem;
+}
+
+.mc-checklist {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.mc-checklist li {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+.mc-kind {
+  font-size: 0.75rem;
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg);
+  color: var(--color-muted);
+  align-self: center;
+}
+.mc-hint {
+  color: var(--color-muted);
+  font-size: 0.85rem;
+}
