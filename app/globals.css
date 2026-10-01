@@ -191,8 +191,15 @@ body {
 }
 .mc-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--space-3);
   margin-top: var(--space-4);
+}
+
+/* ── 랜딩 ── */
+.mc-landing p {
+  max-width: 60ch;
+  color: var(--color-muted);
 }
 
 /* ── 초안/점검 ── */

@@ -1,63 +1,29 @@
 // app/page.tsx
-// 전체 흐름(상태)을 관리하는 화면. compose 3단계: 입력 → 초안 → 점검.
-// '내용'은 모두 data/·lib/ 에서 오고, 여기서는 '틀'과 단계 이동만 다룹니다.
+// 랜딩(첫 화면). 무엇을 하는 앱인지 짧게 소개하고, 두 갈래로 보냅니다.
+//  - [메일 작성] → /compose (입력 → 초안 → 점검)
+//  - [모범 메일 보기] → /models
+// 상태가 없어 서버 컴포넌트입니다.
 
-"use client";
-
-import { useState } from "react";
-import Stepper from "../components/Stepper";
-import ComposeForm from "../components/ComposeForm";
-import DraftList from "../components/DraftList";
-import ChecklistView from "../components/ChecklistView";
-import { generateDrafts } from "../data/templates";
-import type { ComposeInput, Draft } from "../lib/types";
-
-const EMPTY_INPUT: ComposeInput = {
-  recipient: "client",
-  tone: "formal",
-  phrases: [],
-  subject: "",
-  points: [],
-  recipientName: "",
-};
+import Link from "next/link";
 
 export default function Page() {
-  const [stage, setStage] = useState<1 | 2 | 3>(1);
-  const [input, setInput] = useState<ComposeInput>(EMPTY_INPUT);
-  const [drafts, setDrafts] = useState<Draft[]>([]);
-  const [checked, setChecked] = useState<Record<string, boolean>>({});
-
-  const makeDrafts = () => {
-    setDrafts(generateDrafts(input));
-    setStage(2);
-  };
-
-  const toggle = (id: string) =>
-    setChecked((prev) => ({ ...prev, [id]: !prev[id] }));
-
   return (
-    <>
-      <Stepper current={stage} />
-
-      {stage === 1 && (
-        <ComposeForm value={input} onChange={setInput} onSubmit={makeDrafts} />
-      )}
-
-      {stage === 2 && (
-        <DraftList
-          drafts={drafts}
-          onBack={() => setStage(1)}
-          onNext={() => setStage(3)}
-        />
-      )}
-
-      {stage === 3 && (
-        <ChecklistView
-          checked={checked}
-          onToggle={toggle}
-          onBack={() => setStage(2)}
-        />
-      )}
-    </>
+    <section className="mc-card mc-landing">
+      <h2>내부 검토용 이메일 초안 도우미</h2>
+      <p>
+        정해 둔 틀을 규칙대로 조합해 <strong>이메일 초안</strong>을 만들고, 발송
+        전 <strong>점검</strong>을 돕습니다. 외부 AI 없이 같은 입력이면 항상
+        같은 결과가 나오며, 본문에는 작성자가 적은 내용만 들어갑니다(없는 내용은
+        지어내지 않습니다).
+      </p>
+      <div className="mc-actions">
+        <Link className="mc-btn mc-btn--primary" href="/compose">
+          메일 작성
+        </Link>
+        <Link className="mc-btn" href="/models">
+          모범 메일 보기
+        </Link>
+      </div>
+    </section>
   );
 }

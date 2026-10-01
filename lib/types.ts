@@ -7,13 +7,13 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 /** 받는 사람 유형 key. 새 유형을 추가하려면 여기에 먼저 한 줄 추가합니다. */
-export type RecipientKey = "client" | "internal" | "partner";
+export type RecipientKey = "client" | "internal" | "partner" | "exec";
 
 /** 말투(톤) key. */
 export type ToneKey = "formal" | "friendly" | "concise";
 
-/** 끼워 넣는 포함 문구(블록) key. */
-export type PhraseKey = "greeting" | "apology" | "deadline" | "thanks";
+/** 끼워 넣는 포함 문구(블록) key. (선택 순서와 무관하게 '고정 순서'로 삽입됨) */
+export type PhraseKey = "holiday" | "health" | "thanks";
 
 /** 화면에 보여줄 선택지 하나. (드롭다운/버튼에 그대로 쓰입니다) */
 export interface Option<K extends string> {
@@ -27,13 +27,13 @@ export interface Option<K extends string> {
 
 /** 받는 사람별 머리말/맺음말 틀. */
 export interface RecipientTemplate {
-  /** 첫 인사. {name} 자리에 받는 분 이름이 들어갑니다. */
+  /** 첫 인사(호칭). {name} 자리에 받는 분 이름이 들어갑니다. */
   salutation: string;
-  /** 서명/맺음. */
+  /** 서명/맺음말. */
   signoff: string;
 }
 
-/** 톤별 여는 문장/닫는 문장 틀. */
+/** 톤별 여는 문장(도입부)/닫는 문장 틀. */
 export interface ToneTemplate {
   opening: string;
   closing: string;
@@ -52,14 +52,14 @@ export interface PhraseBlock {
 export interface ComposeInput {
   recipient: RecipientKey;
   tone: ToneKey;
-  /** 포함할 문구 블록들. */
+  /** 포함할 문구 블록들(복수 선택). 본문엔 고정 순서로 들어갑니다. */
   phrases: PhraseKey[];
-  /** 제목. */
-  subject: string;
-  /** 작성자가 직접 적는 '사실' 항목들(불릿). 지어내지 않습니다. */
-  points: string[];
+  /** 핵심 내용(자유 텍스트). 비면 본문에 플레이스홀더만 들어갑니다(날조 금지). */
+  content: string;
   /** 받는 분 이름(선택). salutation 의 {name} 에 들어감. */
   recipientName?: string;
+  /** 제목(선택). */
+  subject?: string;
 }
 
 /** 2단계(초안): generateDrafts() 가 만들어 내는 결과 하나. */
@@ -67,8 +67,9 @@ export interface Draft {
   id: string;
   /** 어떤 조합/배치인지 설명하는 제목. */
   title: string;
-  subject: string;
   body: string;
+  /** 제목(입력 시에만). 없으면 화면에서 제목 줄을 숨깁니다. */
+  subject?: string;
 }
 
 /** 모범 메일 1건. reasons 는 '왜 모범인가'로 반드시 채워야 합니다(날조 금지의 연장). */

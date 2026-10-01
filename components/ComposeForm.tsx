@@ -1,5 +1,6 @@
 // components/ComposeForm.tsx
 // 1단계(입력) 화면. 화면은 '틀'만 담당하고, 선택지 내용은 lib/options.ts 에서 옵니다.
+// 핵심내용(content) + 수신자 + 톤 + 포함문구(복수) 를 받습니다.
 
 import {
   RECIPIENT_OPTIONS,
@@ -27,6 +28,25 @@ export default function ComposeForm({ value, onChange, onSubmit }: Props) {
 
   return (
     <section className="mc-card">
+      <div className="mc-field">
+        <label className="mc-label" htmlFor="content">
+          핵심 내용
+        </label>
+        <textarea
+          id="content"
+          className="mc-textarea"
+          value={value.content}
+          placeholder={
+            "전하실 핵심 내용을 적어 주세요.\n(여기 적은 내용만 본문에 들어갑니다 — 없는 내용은 지어내지 않습니다)"
+          }
+          onChange={(e) => onChange({ ...value, content: e.target.value })}
+        />
+        <p className="mc-hint">
+          비워 두면 본문에 &quot;[전하실 내용을 입력해 주세요]&quot; 자리표시가
+          들어갑니다.
+        </p>
+      </div>
+
       <div className="mc-field">
         <label className="mc-label" htmlFor="recipient">
           받는 사람 유형
@@ -71,7 +91,7 @@ export default function ComposeForm({ value, onChange, onSubmit }: Props) {
       </div>
 
       <div className="mc-field">
-        <span className="mc-label">포함 문구</span>
+        <span className="mc-label">포함 문구 (여러 개 선택 가능)</span>
         <div className="mc-chips">
           {PHRASE_OPTIONS.map((o) => (
             <button
@@ -79,6 +99,7 @@ export default function ComposeForm({ value, onChange, onSubmit }: Props) {
               key={o.key}
               className="mc-chip"
               data-on={value.phrases.includes(o.key)}
+              aria-pressed={value.phrases.includes(o.key)}
               onClick={() => togglePhrase(o.key)}
             >
               {o.label}
@@ -89,7 +110,7 @@ export default function ComposeForm({ value, onChange, onSubmit }: Props) {
 
       <div className="mc-field">
         <label className="mc-label" htmlFor="recipientName">
-          받는 분 이름(선택)
+          받는 분 이름 (선택)
         </label>
         <input
           id="recipientName"
@@ -104,29 +125,14 @@ export default function ComposeForm({ value, onChange, onSubmit }: Props) {
 
       <div className="mc-field">
         <label className="mc-label" htmlFor="subject">
-          제목
+          제목 (선택)
         </label>
         <input
           id="subject"
           className="mc-input"
-          value={value.subject}
+          value={value.subject ?? ""}
           placeholder="예: [안내] 요청 자료 회신 기한"
           onChange={(e) => onChange({ ...value, subject: e.target.value })}
-        />
-      </div>
-
-      <div className="mc-field">
-        <label className="mc-label" htmlFor="points">
-          전달할 내용(한 줄에 하나씩)
-        </label>
-        <textarea
-          id="points"
-          className="mc-textarea"
-          value={value.points.join("\n")}
-          placeholder={"요청하신 자료 초안 첨부\n검토 후 수정 의견 회신 요청"}
-          onChange={(e) =>
-            onChange({ ...value, points: e.target.value.split("\n") })
-          }
         />
       </div>
 
