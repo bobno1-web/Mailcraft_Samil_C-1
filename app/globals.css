@@ -569,17 +569,24 @@ textarea.mc-mailbox {
 }
 
 /* ── 모범 메일 카드 ── */
+/* PC 2열 고정(모바일 1열은 아래 반응형). 같은 줄 카드는 높이를 맞춥니다. */
 .mc-models-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--space-4);
-  align-items: start;
+  align-items: stretch;
 }
 .mc-model {
+  display: flex;
+  flex-direction: column;
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius);
   padding: var(--space-5);
+}
+/* 본문 상자가 남는 높이를 채워 같은 줄 카드의 구분선·'왜 모범인가' 위치를 맞춥니다. */
+.mc-model .mc-mailbox {
+  flex: 1 1 auto;
 }
 .mc-model__badge {
   margin-bottom: var(--space-3);
@@ -628,7 +635,8 @@ textarea.mc-mailbox {
   .mc-home-cards,
   .mc-grid-2,
   .mc-grid-3,
-  .mc-send-grid {
+  .mc-send-grid,
+  .mc-models-grid {
     grid-template-columns: 1fr;
   }
   .mc-hero__title {
