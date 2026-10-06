@@ -694,13 +694,14 @@ const FORMS={
      "검토 일정상 ○월 ○일까지 분석을 마쳐야 하여, 다시 한번 부탁드립니다.",
      "해당 자료가 있어야 ○○ 절차를 진행할 수 있어 다시 안내드립니다.",
      "○월 ○일 보고서 초안 송부 일정이 있어, 그 전에 검토를 마쳐야 합니다."]},
-  {k:"alt",    label:"기한이 어려울 때", kind:"check", text:"가능한 제출 일정을 회신해 달라고 요청하기", def:true},
+  {k:"alt",    label:"예정일 회신 기한", kind:"date", prev:true, hint:"기한 내 제출이 어려울 때, 제출 예정일을 언제까지 알려 달라고 할지"},
  ],
  3:[ // 조회서 절차 안내 (고객사)
-  {k:"inst",   label:"대상 금융기관", req:true, kind:"text", ph:"예) 예시카드 (여러 곳이면 쉼표로)"},
+  {k:"n",      label:"발송 대상 금융기관 수", req:true, kind:"num", unit:"곳"},
   {k:"due",    label:"진행 기한", req:true, kind:"date"},
   {k:"method", label:"서류 제출 방법", req:true, kind:"select", opts:["빠른 등기","등기 우편","직접 방문 제출"], def:"빠른 등기"},
-  {k:"addr",   label:"받는 주소·연락처", kind:"area", ph:"예) 서울특별시 ○○구 ○○로 00, 삼일회계법인 ○○본부 / 이감사 회계사 010-0000-0000"},
+  {k:"addr",   label:"받는 주소", kind:"text", ph:"예) 서울특별시 ○○구 ○○로 00, 삼일회계법인 ○○본부"},
+  {k:"recv",   label:"받는 사람·연락처", kind:"text", ph:"예) 이감사 회계사 (010-0000-0000)"},
  ],
  4:[ // 상사 보고 (사내)
   {k:"status", label:"진행 현황", req:true, kind:"area", ph:"줄마다 하나씩\n예) 요청 자료 6건 중 4건 수령\n분석적 검토 진행 중"},
@@ -710,8 +711,8 @@ const FORMS={
   {k:"due",    label:"검토 기한", kind:"date"},
  ],
  5:[ // 사내 타부서 협조
-  {k:"task",   label:"요청 사항", req:true, kind:"area", ph:"예) 법인세비용 및 이연법인세 계산 내역 검토"},
-  {k:"scope",  label:"대상 회사·기준일", req:true, kind:"text", ph:"예) 예시전자 2026년 9월 30일 기준"},
+  {k:"task",   label:"요청 사항", req:true, kind:"area", ph:"예) 9월 30일 기준 법인세비용 및 이연법인세 계산 내역 검토"},
+  {k:"area",   label:"협조 분야", req:true, kind:"text", ph:"예) 세무 검토"},
   {k:"due",    label:"회신 기한", req:true, kind:"date"},
   {k:"why",    label:"요청 이유", kind:"why", ex:[
      "고객사 보고 일정이 ○월 ○일로 예정되어 있어, 그 전에 검토가 필요합니다.",
@@ -732,7 +733,8 @@ function renderForm(){
     if(f.kind==="area") input=`<textarea id="${id}" data-k="${f.k}" rows="2" placeholder="${f.ph}">${esc(v??"")}</textarea>`;
     else if(f.kind==="why") input=`<div class="exs">${f.ex.map((x,i)=>`<button type="button" class="mini ex" data-ex="${i}" title="${esc(x)}">+ ${esc(x.length>26?x.slice(0,26)+"…":x)}</button>`).join("")}</div><textarea id="${id}" data-k="${f.k}" rows="2" placeholder="위 예시를 눌러 넣은 뒤, ○○ 부분을 실제 내용으로 고쳐 주세요. 직접 써도 돼요.">${esc(v??"")}</textarea>`;
     else if(f.kind==="text") input=`<input id="${id}" data-k="${f.k}" value="${esc(v??"")}" placeholder="${f.ph}">`;
-    else if(f.kind==="date") input=`<div class="quick">${quickDates().map(([l,d])=>`<button type="button" class="mini" data-date="${d}">${l} · ${d}</button>`).join("")}</div><input id="${id}" data-k="${f.k}" value="${esc(v??"")}" placeholder="예) 10월 16일(금)">`;
+    else if(f.kind==="date") input=`<div class="quick">${f.prev?`<button type="button" class="mini" data-prev="${f.k}">제출 기한 하루 전</button>`:""}${quickDates().map(([l,d])=>`<button type="button" class="mini" data-date="${d}" data-t="${f.k}">${l} · ${d}</button>`).join("")}</div><input id="${id}" data-k="${f.k}" value="${esc(v??"")}" placeholder="예) 10월 16일(금)">${f.hint?`<div class="rf-note">${f.hint}</div>`:""}`;
+    else if(f.kind==="num") input=`<div class="cnt"><input id="${id}" data-k="${f.k}" type="number" min="1" value="${v??""}"> ${f.unit||""}</div>`;
     else if(f.kind==="select"){const cur=v??f.def??""; input=`<select id="${id}" data-k="${f.k}"><option value="">선택 안 함</option>${f.opts.map(o=>`<option${o===cur?" selected":""}>${o}</option>`).join("")}</select>`;}
     else if(f.kind==="count"){const c=v||{}; input=`<div class="cnt">요청 <input id="${id}-t" data-k="count" data-p="total" type="number" min="0" value="${c.total??""}">건 중 <input id="${id}-g" data-k="count" data-p="got" type="number" min="0" value="${c.got??""}">건 받음</div>`;}
     else if(f.kind==="check"){const on=v??f.def; input=`<label class="chk"><input type="checkbox" id="${id}" data-k="${f.k}"${on?" checked":""}> ${f.text}</label>`;}
@@ -768,7 +770,11 @@ $("#formBox").addEventListener("click",e=>{
   if(x){ const f=FORMS[S.reason].find(f=>f.k==="why"), el=$("#f-why"), add=f.ex[+x.dataset.ex];
     el.value = el.value.trim() ? el.value.trim()+" "+add : add; S.form.why=el.value; refreshForm();
     el.focus(); const i=el.value.indexOf("○"); if(i>=0) el.setSelectionRange(i, i+2); return; }
-  const b=e.target.closest("[data-date]"); if(!b) return; const el=$("#f-due"); el.value=b.dataset.date; S.form.due=b.dataset.date; refreshForm(); });
+  const pv=e.target.closest("[data-prev]");
+  if(pv){ const d=dayBefore(S.form.due); if(!d){ toast("제출 기한을 먼저 입력해 주세요"); return; } const el=$("#f-"+pv.dataset.prev); el.value=d; S.form[pv.dataset.prev]=d; refreshForm(); return; }
+  const b=e.target.closest("[data-date]"); if(!b) return; const k=b.dataset.t||"due", el=$("#f-"+k); el.value=b.dataset.date; S.form[k]=b.dataset.date; refreshForm(); });
+/* '10월 16일(금)' → '10월 15일(목)' */
+function dayBefore(txt){ const m=(txt||"").match(/(\d{1,2})\s*월\s*(\d{1,2})\s*일/); if(!m) return ""; const t=today(); const d=new Date(t.getFullYear(),+m[1]-1,+m[2]-1); return fmtDate(d); }
 
 /* 공통 틀 */
 function frame(){
@@ -791,65 +797,117 @@ const CONF_STEPS=[
  "__사업자등록번호 목록__: 금융기관 조회서 접수 시 필수"];
 
 /* 사유별 메일 틀: 입력 칸 값만 사용 (없는 내용은 만들지 않아요) */
+/* ===================== 메일 틀: 콘텐츠 팀 예시 메일 기준 (상황 × 격식/간곡) =====================
+   요점형 = 예시 메일 그대로(번호 목록), 정중형 = 같은 내용을 문장으로 이어 쓴 형태 */
+const GAN = ()=>S.tone==="간곡";
+function core(){ return (val("keyword")||"").replace(/\s*관련$/,"").trim(); }
 function build(v,f){
-  const due=v.due||"", dueT=due?`==${due}까지== `:"";
+  const due=v.due||OO, items=splitList(v.items), it=items.join(", ")||OO, itKo=listKo(items)||OO;
   const why=(v.why||"").trim().replace(/([^.!?])$/,"$1.");
+  const co=val("company")||"회사명", c=core();
+  const greet=[`안녕하십니까, ${f.to}.`, f.intro, ...(f.first?[f.first]:[]), ...f.opens];
+  const W1="다가오는 주말도 잘 보내시길 바랍니다.";
   switch(S.reason){
-  case 0: { const items=splitList(v.items), base=v.base?`${v.base} 기준 `:"";
-    return {purpose:`다름 아니라 ${f.ctx}필요한 자료를 요청드리고자 연락드리게 되었습니다.`,
-      facts:[`요청 자료: __${base}${items.join(", ")||OO}__`, ...(why?[`요청 이유: ${why.replace(/\.$/,"")}`]:[]), `제출 기한: ${due?`==${due}까지==`:OO}`, ...(v.format?[`제출 형식: __${v.format}__`]:[]), ...(v.method?[`회신 방법: ${v.method}`]:[])],
-      flow:[`요청드리는 자료는 __${base}${listKo(items)||OO}__입니다.`, ...(why?[why]:[]), ...(v.format?[`확인이 수월하도록 __${josa(v.format,"으로/로")}__ 보내 주시면 감사하겠습니다.`]:[])],
-      brief:`__${base}${listKo(items)||OO}__${hasBatchim(listKo(items)||OO)>0?"을":"를"} 요청드립니다.`,
-      act:`${dueT}${v.method==="빠른 등기로 원본 송부"?"빠른 등기로 원본을 송부해":"송부해"}`}; }
-  case 2: { const items=splitList(v.items), c=v.count||{}, hasC=c.total&&c.got!==undefined;
-    return {purpose:`다름 아니라 ${f.ctx}${v.first?`**${v.first}에 요청드린 자료**의`:"요청드린 자료의"} 제출 기한이 다가와 다시 한번 안내드리고자 연락드리게 되었습니다.`,
-      facts:[...(hasC?[`수령 현황: 요청 자료 ${c.total}건 중 ${c.got}건 수령`]:[]), `미제출 자료: __${items.join(", ")||OO}__`, ...(why?[`요청 이유: ${why.replace(/\.$/,"")}`]:[]), `제출 기한: ${due?`==${due}까지==`:OO}`],
-      flow:[hasC?`바쁘신 와중에도 요청드린 자료 ${c.total}건 중 ${c.got}건을 보내 주셔서 감사합니다.`:"바쁘신 와중에 자료 준비에 신경 써 주셔서 감사합니다.",
-            `다만 __${listKo(items)||OO}__${hasBatchim(listKo(items)||OO)>0?"은":"는"} 아직 확인되지 않아 다시 한번 안내드립니다.`, ...(why?[why]:[])],
-      brief:`미제출 자료는 __${listKo(items)||OO}__입니다.`,
-      act:`${dueT}송부해`, after: v.alt?["혹시 기한 내 제출이 어려우시면, 제출 가능한 일정을 회신해 주시면 일정을 맞추겠습니다."]:[]}; }
-  case 3: { const inst=splitList(v.inst);
-    return {purpose:`다름 아니라 금융기관 조회서 발송 대상으로 **${listKo(inst)||OO} ${inst.length||1}곳이 추가로 확인**되어, 관련 절차를 안내드리고자 연락드리게 되었습니다.`,
-      facts:CONF_STEPS, flow:["준비해 주실 서류는 아래와 같습니다.", ...CONF_STEPS.map((x,i)=>`${i+1}. ${x}`)],
-      brief:"법인인감 날인 서류, 법인인감증명서 원본(3개월 이내 발급), 사업자등록증 사본, 사업자등록번호 목록을 준비 부탁드립니다.",
-      act:`위 절차를 ${dueT}진행해`,
-      after:[`준비하신 서류 1세트는 ${v.method?`==${v.method}==`:OO}${v.method==="직접 방문 제출"?" 방식으로 전달해 주시기 바랍니다.":"로 보내 주시기 바랍니다."}`,
-             ...(v.addr?v.addr.split(/\n+/).map(x=>x.trim()).filter(Boolean).map(x=>`- ${x}`):[])]}; }
+  case 0: { const base=v.base?`${v.base} 기준 `:"";
+    return GAN() ? {
+      subject:`[삼일회계법인] ${c?c+" 관련 ":""}자료 요청드립니다`, greet,
+      purpose:`다름 아니라 ${c?`**${c}** `:""}수행을 위해 하기 자료가 필요한 상황으로, 번거로우시겠지만 확인 후 전달 부탁드리고자 연락드립니다.`,
+      list:[`요청 자료: __${base}${it}__`, ...(v.format?[`제출 형식: ${v.format}`]:[]), ...(v.method?[`회신 방법: ${v.method}`]:[])], num:true,
+      prose:[`요청드리는 자료는 __${base}${itKo}__입니다.`, ...(v.format?[`확인이 수월하도록 ${josa(v.format,"으로/로")} 보내 주시면 감사하겠습니다.`]:[])],
+      why,
+      after:[`가능하시다면 ==${due}까지== 전달을 부탁드립니다.`, "일정상 전체 자료를 한 번에 준비하시기 어려우신 경우에는 준비되시는 자료부터 우선 전달해 주셔도 괜찮습니다."],
+      close:["자료 준비 과정에서 확인이 필요하시거나 궁금하신 사항이 있으시면 언제든 말씀 부탁드립니다.", "업무로 바쁘신 가운데 협조를 부탁드려 죄송하며, 도움 주시면 감사하겠습니다."]
+    } : {
+      subject:`[삼일회계법인] ${c?c+" 관련 ":""}자료 요청의 건`, greet,
+      purpose:`다름 아니라 ${c?`**${c}** `:""}수행에 필요한 자료를 요청드리고자 연락드립니다.`,
+      list:[`요청 자료: __${base}${it}__`, `제출 기한: ==${due}까지==`, ...(v.format?[`제출 형식: ${v.format}`]:[]), ...(v.method?[`회신 방법: ${v.method}`]:[])], num:true,
+      prose:[`요청드리는 자료는 __${base}${itKo}__이며, ==${due}까지== ${v.format?`${josa(v.format,"으로/로")} `:""}보내 주시면 감사하겠습니다.`],
+      why, after:[],
+      close:["자료 준비 과정에서 확인이 필요하시거나 요청사항과 관련하여 궁금하신 사항이 있으시면 언제든 말씀 부탁드립니다.", W1]
+    }; }
+  case 2: { const first=v.first?`${v.first}에 `:"", cnt=v.count&&v.count.total?`요청 자료 ${v.count.total}건 중 ${v.count.got??0}건 수령`:"";
+    return GAN() ? {
+      subject:"[삼일회계법인] 요청 자료 전달 일정 확인 부탁드립니다", greet,
+      purpose:`다름 아니라 ${first}요청드린 하기 자료가 확인되지 않아 다시 한번 연락드립니다.`,
+      list:[...(cnt?[`수령 현황: ${cnt}`]:[]), `미제출 자료: __${it}__`], num:false,
+      prose:[`${cnt?`현재 ${cnt} 상태이며, `:""}__${itKo}__${hasBatchim(itKo)>0?"이":"가"} 아직 확인되지 않았습니다.`],
+      why:"",
+      after:[`${why?why.replace(/\.$/,"")+" 상황이라":"일정상 해당 자료에 대한 검토가 완료되어야 후속 절차를 진행할 수 있는 상황이라"}, 번거로우시겠지만 ==${due}까지== 전달 부탁드립니다.`,
+             ...(v.alt?[`해당 기한까지 전달이 어려우신 경우, ==${v.alt}까지== 제출 예정일을 알려주시면 감사하겠습니다.`]:[])],
+      close:["바쁘신 상황에서 재차 요청드려 죄송하며, 협조 부탁드립니다."]
+    } : {
+      subject:"[삼일회계법인] 요청 자료 제출 기한 재안내의 건", greet,
+      purpose:`다름 아니라 ${first}요청드린 하기 자료와 관련하여 진행 상황 확인차 메일드립니다.`,
+      list:[...(cnt?[`수령 현황: ${cnt}`]:[]), `미제출 자료: __${it}__`, `제출 기한: ==${due}까지==`, ...(v.alt?[`기한 내 제출이 어려우신 경우, ==${v.alt}까지== 제출 예정일을 회신 부탁드립니다.`]:[])], num:false,
+      prose:[`아직 확인되지 않은 자료는 __${itKo}__이며, ==${due}까지== 제출 부탁드립니다.`, ...(v.alt?[`기한 내 제출이 어려우신 경우, ==${v.alt}까지== 제출 예정일을 회신 부탁드립니다.`]:[])],
+      why, after:[],
+      close:["자료 준비와 관련하여 문의사항이 있으시면 말씀 부탁드립니다.", W1]
+    }; }
+  case 3: { const n=v.n?`${v.n}곳`:"○곳";
+    const steps=["첨부된 PDF를 출력하여 안내문과 정보제공 요구서에 __법인인감 날인__","__법인인감증명서 원본__ (조회일로부터 3개월 이내 발급분)","__사업자등록증 사본__ (번호가 여러 개면 번호별로 모두 필요)","__사업자등록번호 목록__"];
+    const send = v.method==="직접 방문 제출" ? "위 서류를 아래 주소로 직접 제출해 주시기 바랍니다." : `위 서류를 아래 주소로 ${v.method||"○○"}로 보내 주시기 바랍니다.`;
+    const addr=[...(v.addr?[`- 주소: ${v.addr}`]:[]), ...(v.recv?[`- 받는 사람: ${v.recv}`]:[])];
+    return {
+      subject:`[삼일회계법인] 금융기관 조회서 관련 절차 ${GAN()?"안내드립니다":"안내의 건"}`, greet,
+      purpose:`당기 금융기관 조회서 발송 대상으로 ${n}이 선정되어, 관련하여 조회서 절차를 안내드리고자 연락드립니다.`,
+      lead: GAN()?`번거로우시겠지만 하기 내용을 확인하셔서 ==${due}까지== 절차 진행해주시면 감사하겠습니다.`:`하기 절차는 ==${due}까지== 진행해주시면 감사하겠습니다.`,
+      list:steps, num:true, prose:null, why:"",
+      after:[send, ...addr, ...(GAN()?["", "조회서 회수까지 일정 기간이 소요되는 관계로, 일정에 맞추어 협조 부탁드립니다."]:[])],
+      close: GAN()?["바쁘신 가운데 협조를 부탁드려 죄송하며, 관련하여 문의사항이 있으시면 편하게 말씀 부탁드립니다."]:["절차와 관련하여 문의사항이 있으시면 편하게 말씀 부탁드립니다.", W1]
+    }; }
   case 4: { const L=x=>(x||"").split(/\n+/).map(t=>t.trim()).filter(Boolean);
-    const st=L(v.status), is=L(v.issue), pl=L(v.plan), wantReview=v.ask&&v.ask!=="확인만 부탁 (요청 없음)";
-    const facts=[`진행 현황: ${st.join(", ")||OO}`, `주요 이슈: ${is.length?`__${is.join(", ")}__`:OO}`, `향후 일정: ${pl.join(", ")||OO}`, ...(wantReview?[`요청 사항: ${due?`==${due}까지== `:""}${v.ask}`]:[])];
-    return {purpose:`다름 아니라 ${f.ctx}진행 현황을 보고드리고자 연락드리게 되었습니다.`,
-      facts, flow:["현재 진행 상황은 아래와 같습니다.", ...facts.slice(0,3).map(x=>`- ${x}`)],
-      brief:`진행 현황은 ${st.join(", ")||OO}이며, ${is.length&&!/특이사항 없음/.test(is.join(""))?`주요 이슈는 ${is.join(", ")}입니다.`:"특이사항은 없습니다."}`,
-      act: wantReview ? `${dueT}${v.ask==="보고서 초안 사전 검토"?"보고서 초안을 사전 검토해":"이슈에 대한 의견을"}` : "",
-      after: wantReview?[]:["확인 부탁드립니다."]}; }
-  case 5: { const tasks=splitList(v.task);
-    return {purpose:`다름 아니라 ${v.scope?`**${v.scope}**`:OO} ${tasks.length>1?"관련 업무":"검토"}와 관련하여 업무 협조를 요청드리고자 연락드리게 되었습니다.`.replace("검토와 관련하여","검토와 관련하여"),
-      facts:[`요청 사항: __${tasks.join(", ")||OO}__`, ...(why?[`요청 이유: ${why.replace(/\.$/,"")}`]:[]), `대상: ${v.scope||OO}`, `회신 기한: ${due?`==${due}까지==`:OO}`, ...(v.deliver?[`관련 자료: ${v.deliver}`]:[])],
-      flow:[`요청드리는 사항은 __${listKo(tasks)||OO}__입니다.`, ...(why?[why]:[]), ...(v.deliver==="사내 공유 폴더에 업로드 후 안내"?["관련 자료는 사내 공유 폴더에 업로드한 뒤 별도로 안내드리겠습니다."]:v.deliver==="본 메일에 첨부"?["관련 자료는 본 메일에 첨부드렸습니다."]:v.deliver==="별도로 안내"?["관련 자료는 별도로 안내드리겠습니다."]:[])],
-      brief:`요청드리는 사항은 __${listKo(tasks)||OO}__입니다.`,
-      act:`${dueT}회신해`}; }
+    const st=L(v.status).join(", ")||OO, is=L(v.issue).join(", ")||OO, pl=L(v.plan).join(", ")||OO;
+    const req = v.ask==="보고서 초안 사전 검토" ? `이에 따라 ${v.due?`==${v.due}까지== `:""}보고서 초안을 사전 검토해주시면 감사하겠습니다.`
+              : v.ask==="이슈에 대한 의견" ? `이에 따라 ${v.due?`==${v.due}까지== `:""}위 이슈에 대한 의견 주시면 감사하겠습니다.` : "";
+    return {
+      subject:`[${co}] ${c?c+" ":""}진행 현황 보고의 건`, greet,
+      purpose:`${co} ${c?c+" ":""}진행 현황을 아래와 같이 보고드립니다.`,
+      list:[`진행 현황: ${st}`, `주요 이슈: __${is}__`, `향후 일정: ${pl}`], num:true,
+      prose:[`현재 ${st} 상황입니다.`, `주요 이슈는 __${is}__이며, 향후 일정은 ${pl}입니다.`],
+      why:"", after:[...(req?[req]:[]), "또한 추가적으로 확인이 필요한 사항이나 우선적으로 진행해야 할 부분이 있으시면 말씀 부탁드립니다."],
+      close:[W1]
+    }; }
+  case 5: { const area=v.area||"업무", tasks=splitList(v.task), tk=tasks.join(", ")||OO;
+    const dl = v.deliver==="사내 공유 폴더에 업로드 후 안내" ? "사내 공유 폴더에 업로드한 뒤 별도로 안내드리겠습니다." : v.deliver==="본 메일에 첨부" ? "본 메일에 첨부드렸습니다." : v.deliver==="별도로 안내" ? "별도로 안내드리겠습니다." : "";
+    const base={ subject:`[${co}] ${c?c+" 관련 ":""}${area} 협조 요청의 건`, greet,
+      purpose:`다름 아니라 ${co} ${c?`${josa(c,"과/와")} 관련하여 `:""}${area} 협조를 요청드리고자 연락드립니다.`, why };
+    return GAN() ? {...base,
+      list:[`요청 사항: __${tk}__`, ...(dl?[`관련 자료: ${dl}`]:[])], num:true,
+      prose:[`요청드리는 사항은 __${listKo(tasks)||OO}__입니다.`, ...(dl?[`관련 자료는 ${dl}`]:[])],
+      after:[`가능하시다면 ==${due}까지== 검토를 부탁드립니다.`],
+      close:["바쁘신 와중에 검토 요청을 드려 죄송하며, 업무 진행 과정에서 확인이 필요하시거나 문의사항이 있으시면 언제든 말씀 부탁드립니다."]
+    } : {...base,
+      list:[`요청 사항: __${tk}__`, `회신 기한: ==${due}까지==`, ...(dl?[`관련 자료: ${dl}`]:[])], num:true,
+      prose:[`요청드리는 사항은 __${listKo(tasks)||OO}__이며, ==${due}까지== 회신 부탁드립니다.`, ...(dl?[`관련 자료는 ${dl}`]:[])],
+      after:[], close:[W1]
+    }; }
   }
 }
 function buildDrafts(){
-  const f=frame(), v=S.form, b=build(v,f), tone=TONES[S.tone]||TONES["격식"];
-  const note=(v.note||"").trim();
-  const ask = b.act ? tone.ask(b.act) : "";
-  const head=w=>[`안녕하십니까, ${f.to}.`, f.intro, ...(w!=="brief"&&f.first?[f.first]:[]), ...(w!=="brief"?f.opens:[]), ""];
-  const tail=w=>["", ...(f.closes.length?f.closes:(w==="brief"?[]:[W])), ...((f.closes.length||w!=="brief")?[""]:[]), "감사합니다.", `${f.me} 드림`];
+  const f=frame(), b=build(S.form,f), note=(S.form.note||"").trim();
+  const closes=f.closes.length ? [...b.close.filter(x=>!/주말/.test(x)), ...f.closes] : b.close;
   const mk=w=>{
-    const out=[...head(w)]; if(tone.pre&&w!=="brief") out.push(tone.pre);
-    out.push(b.purpose,"");
-    if(w==="point"){ b.facts.forEach((x,i)=>out.push(`${i+1}. ${x}`)); if(note) out.push(`- 참고: ${note}`); out.push(""); if(ask) out.push(ask); (b.after||[]).forEach(x=>out.push(x)); }
-    else if(w==="polite"){ b.flow.forEach(x=>out.push(x)); if(note) out.push(note);
-      const busy=b.flow.join(" ").includes("바쁘신");
-      out.push(""); if(ask) out.push((S.tone==="격식"?(busy?"번거로우시겠지만 ":"바쁘신 와중에 번거로우시겠지만 "):"")+ask); (b.after||[]).forEach(x=>out.push(x));
-      out.push("","궁금하신 점이 있으시면 편하게 말씀 부탁드립니다."); }
-    else { out.push(b.brief); if(ask) out.push(ask); else (b.after||[]).slice(0,1).forEach(x=>out.push(x)); }
-    return [...out,...tail(w)].join("\n").replace(/\n{3,}/g,"\n\n");
+    const out=[...b.greet, "", b.purpose, ""];
+    if(b.lead) out.push(b.lead, "");
+    if(w==="point" || !b.prose){ b.list.forEach((x,i)=>out.push(b.num?`${i+1}. ${x}`:`- ${x}`)); if(b.why) out.push("", b.why); }
+    else { b.prose.forEach(x=>out.push(x)); if(b.why) out.push(b.why); }
+    if(note) out.push("", note);
+    if(b.after.length) out.push("", ...b.after);
+    out.push("", ...closes, "", "감사합니다.", `${f.me} 드림`);
+    return out.join("\n").replace(/\n{3,}/g,"\n\n");
   };
-  return {subject:f.subject, point:mk("point"), polite:mk("polite")};
+  return {subject:b.subject, point:mk("point"), polite:mk("polite")};
 }
+
+/* 상황을 바꿀 때: 예시 메일 기준 첫인사 기본값, 상사 보고는 간곡 톤 없음 */
+const FIRST_DEF={0:"처음",2:"",3:"",4:"",5:"처음"};
+function syncSituation(){
+  $("#first").value = FIRST_DEF[S.reason] ?? "";
+  const g=$('#toneChips .chip[data-v="간곡"]'); if(!g) return;
+  g.hidden = S.reason===4;
+  if(S.reason===4 && S.tone==="간곡"){ const f=$('#toneChips .chip[data-v="격식"]'); if(f) f.click(); }
+}
+
 function buildAndShow(){
   const r=buildDrafts();
   S.engine="🔧 입력한 값으로 메일 양식 틀을 채웠어요 (AI 미사용)";
@@ -871,11 +929,11 @@ $("#makeBtn").onclick=()=>{
 };
 /* 예시 값 채우기 (가상의 회사·인물) */
 const SAMPLES={
- 0:{items:"시산표, 매출채권 연령분석표, 차입금 명세서", base:"2026년 9월 30일", why:"전기 대비 매출채권 잔액의 변동이 커서, 변동 내역을 확인하고자 합니다.", format:"엑셀 원본 파일", method:"본 메일로 회신"},
- 2:{items:"매출채권 연령분석표, 차입금 명세서", first:"10월 5일(월)", count:{total:6,got:4}, alt:true},
- 3:{inst:"예시카드", method:"빠른 등기", addr:"서울특별시 ○○구 ○○로 00, 삼일회계법인 ○○본부\n받는 사람: 이감사 회계사 (010-0000-0000)"},
+ 0:{items:"시산표, 매출채권 연령분석표, 차입금 명세서", base:"9월 30일", format:"엑셀 원본 파일", method:"본 메일로 회신"},
+ 2:{items:"매출채권 연령분석표, 차입금 명세서", first:"10월 5일(월)"},
+ 3:{n:3, method:"빠른 등기", addr:"서울특별시 ○○구 ○○로 00, 삼일회계법인 ○○본부", recv:"이감사 회계사 (010-0000-0000)"},
  4:{status:"요청 자료 6건 중 4건 수령\n분석적 검토 진행 중", issue:"매출채권 연령분석표 미제출 (10월 16일 제출 예정)", plan:"10월 23일(금) 고객사에 보고서 초안 송부 예정", ask:"보고서 초안 사전 검토"},
- 5:{task:"법인세비용 및 이연법인세 계산 내역 검토", scope:"예시전자 2026년 9월 30일 기준", deliver:"사내 공유 폴더에 업로드 후 안내"},
+ 5:{task:"9월 30일 기준 법인세비용 및 이연법인세 계산 내역 검토", area:"세무 검토", deliver:"사내 공유 폴더에 업로드 후 안내"},
 };
 $("#fillSample").onclick=()=>{ S.form=JSON.parse(JSON.stringify(SAMPLES[S.reason])); S.tried=false; renderForm(); toast("예시 값을 채웠어요 🪄 기한만 골라 보세요"); };
 S.form={}; S.tried=false;
@@ -886,14 +944,14 @@ function chips(el, items, cur, cls, onPick){
   el.innerHTML = items.map((x,i)=>`<button class="chip ${cls}" data-i="${i}" data-v="${x}" aria-pressed="${(typeof cur==="number"?i===cur:x===cur)}"><span class="n">${i+1}</span>${x}</button>`).join("");
   el.onclick=e=>{const b=e.target.closest(".chip"); if(!b) return; onPick(+b.dataset.i,b.dataset.v); [...el.children].forEach(c=>c.setAttribute("aria-pressed",c===b));};
 }
-chips($("#reasonChips"), ACTIVE.map(i=>SITU[i]), 0, "", i=>{S.reason=ACTIVE[i]; autoTarget(S.reason); S.form={}; S.tried=false; renderForm();});
+chips($("#reasonChips"), ACTIVE.map(i=>SITU[i]), 0, "", i=>{S.reason=ACTIVE[i]; autoTarget(S.reason); S.form={}; S.tried=false; renderForm(); syncSituation();});
 function renderTargets(){chips($("#targetChips"), TARGETS.map(t=>t.k), S.target, "", i=>{S.target=i; if(!S.nameEdited) $("#toName").value=TARGETS[i].name;});}
 renderTargets();
 chips($("#toneChips"), Object.keys(TONES), "격식", "tone-chip", (i,v)=>{S.tone=v; $("#toneDesc").textContent=TONES[v].d;});
 $("#toneDesc").textContent=TONES["격식"].d;
 $("#toName").value=TARGETS[0].name;
 $("#toName").addEventListener("input",()=>S.nameEdited=true);
-renderForm();
+renderForm(); syncSituation();
 function autoTarget(i){ // 사유에 어울리는 대상 기본값
   const map={4:1,5:2,6:2,7:3}; const t = map[i] ?? 0;
   if(t!==S.target){S.target=t; renderTargets(); if(!S.nameEdited) $("#toName").value=TARGETS[t].name;}
@@ -1041,7 +1099,7 @@ $("#remindBtn").onclick=()=>{
   const prev=S.form||{};
   S.reason=2; S.form={items:prev.items||"", first:fmtDate(today()), alt:true}; S.tried=false;
   [...$("#reasonChips").children].forEach((c,i)=>c.setAttribute("aria-pressed",ACTIVE[i]===2));
-  $("#first").value=""; renderForm(); go("compose");
+  renderForm(); syncSituation(); go("compose");
   toast("리마인드 칸을 채워 뒀어요. 기한을 고르고 초안을 만들어 주세요 📅");
 };
 $("#mCopy").onclick=async()=>{
